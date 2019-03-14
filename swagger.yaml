@@ -1,0 +1,886 @@
+swagger: '2.0'
+info:
+  description: This documentation provides an overview of the FHNW wodss API.
+  version: 1.2.0
+  title: FHNW Projektplanung (Modul wodss)
+  contact:
+    name: Wächter Simon
+    url: 'https://github.com/swaechter'
+    email: simon.waechter@students.fhnw.ch
+host: 'localhost:8000'
+basePath: /
+tags:
+  - name: Allocation
+    description: Endpoint for managing all allocations
+  - name: Contract
+    description: Endpoint for managing all contracts
+  - name: Employee
+    description: Endpoint for managing all employees
+  - name: Me
+    description: Endpoint to get to know yourself
+  - name: Project
+    description: Endpoint for managing all projects
+paths:
+  /api/allocation:
+    get:
+      tags:
+        - Allocation
+      summary: Get all allocations
+      operationId: getAllocations
+      produces:
+        - application/json
+      parameters:
+        - name: employeeId
+          in: query
+          description: Filter the allocations by an employee (Multiple filters can stack)
+          required: false
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          allowEmptyValue: false
+          x-example: 42
+        - name: projectId
+          in: query
+          description: Filter the allocations by a project (Multiple filters can stack)
+          required: false
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          allowEmptyValue: false
+          x-example: 42
+      responses:
+        '200':
+          description: All allocations (Administrator) or only the own ones (Project Manager/Developer)
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Allocation'
+        '404':
+          description: Employee or project not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    post:
+      tags:
+        - Allocation
+      summary: Create a new allocation
+      operationId: createAllocation
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: allocation
+          description: Allocation to create (The ID in the body will be ignored)
+          required: true
+          schema:
+            $ref: '#/definitions/Allocation'
+      responses:
+        '200':
+          description: New allocation with the generated ID
+          schema:
+            $ref: '#/definitions/Allocation'
+        '403':
+          description: Missing permission to create a allocation
+        '404':
+          description: Employee or project not found
+        '412':
+          description: Precondition for the allocation failed
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+  '/api/allocation/{id}':
+    get:
+      tags:
+        - Allocation
+      summary: Get a specific allocation
+      operationId: getAllocation
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the allocation
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Specific allocation
+          schema:
+            $ref: '#/definitions/Allocation'
+        '403':
+          description: Missing permission to get the allocation
+        '404':
+          description: Allocation not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    put:
+      tags:
+        - Allocation
+      summary: Update a specific allocation
+      operationId: updateAllocation
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: allocation
+          description: Updated allocation (The ID in the body will be ignored)
+          required: true
+          schema:
+            $ref: '#/definitions/Allocation'
+        - name: id
+          in: path
+          description: ID of the allocation to be updated
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Specific updated allocation
+          schema:
+            $ref: '#/definitions/Allocation'
+        '403':
+          description: Missing permission to update the allocation
+        '404':
+          description: 'Allocation, employee or project not found'
+        '412':
+          description: Precondition for the allocation failed
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    delete:
+      tags:
+        - Allocation
+      summary: Delete a specific allocation including all associated allocations
+      operationId: deleteAllocation
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the allocation to be deleted
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Allocation successfully deleted
+        '403':
+          description: Missing permission to delete the allocation
+        '404':
+          description: Allocation not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+  /api/contract:
+    get:
+      tags:
+        - Contract
+      summary: Get all contracts
+      operationId: getContracts
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: All contracts (Administrator/Project Manager) or only own ones (Developer)
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Contract'
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    post:
+      tags:
+        - Contract
+      summary: Create a new contract
+      operationId: createContract
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: contract
+          description: Contract to create (The ID in the body will be ignored)
+          required: true
+          schema:
+            $ref: '#/definitions/Contract'
+      responses:
+        '200':
+          description: New contract with the generated ID
+          schema:
+            $ref: '#/definitions/Contract'
+        '403':
+          description: Missing permission to create a contract
+        '404':
+          description: Employee not found
+        '412':
+          description: Precondition for the contract failed
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+  '/api/contract/{id}':
+    get:
+      tags:
+        - Contract
+      summary: Get a specific contract
+      operationId: getContract
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the contract
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Specific contract
+          schema:
+            $ref: '#/definitions/Contract'
+        '403':
+          description: Missing permission to get the contract
+        '404':
+          description: Contract not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    put:
+      tags:
+        - Contract
+      summary: Update a specific contract
+      operationId: updateContract
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: contract
+          description: Updated contract (The ID in the body will be ignored)
+          required: true
+          schema:
+            $ref: '#/definitions/Contract'
+        - name: id
+          in: path
+          description: ID of the contract to be updated
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Specific updated contract
+          schema:
+            $ref: '#/definitions/Contract'
+        '403':
+          description: Missing permission to update the contract
+        '404':
+          description: Contract or employee not found
+        '412':
+          description: Precondition for the contract failed
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    delete:
+      tags:
+        - Contract
+      summary: Delete a specific contract including all associated allocations
+      operationId: deleteContract
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the contract to be deleted
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Contract successfully deleted
+        '403':
+          description: Missing permission to delete the contract
+        '404':
+          description: Contract not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+  /api/employee:
+    get:
+      tags:
+        - Employee
+      summary: Get all employees
+      operationId: getEmployees
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: All employees (Administrator/Project Manager/Developer)
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Employee'
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    post:
+      tags:
+        - Employee
+      summary: Create a new employee
+      operationId: createEmployee
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: employee
+          description: Employee to create (The ID in the body will be ignored)
+          required: true
+          schema:
+            $ref: '#/definitions/Employee'
+      responses:
+        '200':
+          description: New employee with the generated ID
+          schema:
+            $ref: '#/definitions/Employee'
+        '403':
+          description: Missing permission to create an employee
+        '412':
+          description: Precondition for the employee failed
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+  '/api/employee/{id}':
+    get:
+      tags:
+        - Employee
+      summary: Get a specific employee
+      operationId: getEmployee
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the employee
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Specific employee
+          schema:
+            $ref: '#/definitions/Employee'
+        '403':
+          description: Missing permission to get the employee
+        '404':
+          description: Employee not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    put:
+      tags:
+        - Employee
+      summary: Update a specific employee
+      operationId: updateEmployee
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: employee
+          description: Updated employee (The ID in the body will be ignored)
+          required: true
+          schema:
+            $ref: '#/definitions/Employee'
+        - name: id
+          in: path
+          description: ID of the employee to be updated
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Specific updated employee
+          schema:
+            $ref: '#/definitions/Employee'
+        '403':
+          description: Missing permission to update the employee
+        '404':
+          description: Employee not found
+        '412':
+          description: Precondition for the employee failed
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    delete:
+      tags:
+        - Employee
+      summary: Delete a specific employee
+      operationId: deleteEmployee
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the employee to be deleted
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Employee successfully deleted
+        '403':
+          description: Missing permission to delete the employee
+        '404':
+          description: Employee not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+  /api/me:
+    get:
+      tags:
+        - Me
+      summary: Get to know yourself as employee
+      operationId: getYourself
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'You, the employee'
+          schema:
+            $ref: '#/definitions/Employee'
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+  /api/project:
+    get:
+      tags:
+        - Project
+      summary: Get all projects
+      operationId: getProjects
+      produces:
+        - application/json
+      parameters:
+        - name: includePast
+          in: query
+          description: 'Flag to include previous, already finished/ended projects'
+          required: false
+          type: boolean
+          allowEmptyValue: false
+          x-example: true
+          enum:
+            - 'true'
+            - 'false'
+      responses:
+        '200':
+          description: All projects (Administrator) or only the assigned/involved ones (Project Manager/Developer)
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Project'
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    post:
+      tags:
+        - Project
+      summary: Create a new project
+      operationId: createProject
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: project
+          description: Project to create (The ID in the body will be ignored)
+          required: true
+          schema:
+            $ref: '#/definitions/Project'
+      responses:
+        '200':
+          description: New project with the generated ID
+          schema:
+            $ref: '#/definitions/Project'
+        '403':
+          description: Missing permission to create a project
+        '412':
+          description: Precondition for the project failed
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+  '/api/project/{id}':
+    get:
+      tags:
+        - Project
+      summary: Get a specific project
+      operationId: getProject
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the project
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Specific project
+          schema:
+            $ref: '#/definitions/Project'
+        '403':
+          description: Missing permission to get the project
+        '404':
+          description: Project not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    put:
+      tags:
+        - Project
+      summary: Update a specific project
+      operationId: updateProject
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the project to be updated
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+        - in: body
+          name: project
+          description: Updated project (The ID in the body will be ignored)
+          required: true
+          schema:
+            $ref: '#/definitions/Project'
+      responses:
+        '200':
+          description: Specific updated project
+          schema:
+            $ref: '#/definitions/Project'
+        '403':
+          description: Missing permission to update the project
+        '404':
+          description: Project not found
+        '412':
+          description: Precondition for the project failed
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+    delete:
+      tags:
+        - Project
+      summary: Delete a specific project including all associated allocations
+      operationId: deleteProject
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of the project to be deleted
+          required: true
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          x-example: 42
+      responses:
+        '200':
+          description: Project successfully deleted
+        '403':
+          description: Missing permission to delete the project
+        '404':
+          description: Project not found
+        '500':
+          description: Uncaught or internal server error
+      deprecated: false
+definitions:
+  Allocation:
+    type: object
+    required:
+      - employeeId
+      - endDate
+      - pensumPercentage
+      - projectId
+      - startDate
+    properties:
+      id:
+        type: integer
+        format: int64
+        example: 42
+        description: Allocation ID
+        readOnly: true
+        minimum: 1
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+      startDate:
+        type: string
+        format: date
+        example: '2019-03-13'
+        description: Allocation start date (YYYY-MM-DD)
+      endDate:
+        type: string
+        format: date
+        example: '2019-06-13'
+        description: Allocation end date (YYYY-MM-DD)
+      pensumPercentage:
+        type: integer
+        format: int64
+        example: 50 (= 0.5 FTE)
+        description: Full time equivalent for the contract as percentage value (0.5 FTE = 50%)
+        minimum: 0
+        maximum: 100
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+      employeeId:
+        type: integer
+        format: int64
+        example: 42
+        description: Employee ID of the allocation
+        minimum: 1
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+      projectId:
+        type: integer
+        format: int64
+        example: 42
+        description: Project ID of the allocation
+        minimum: 1
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+    title: Allocation
+    description: Represents the work unit an employee is doing for a project
+  Contract:
+    type: object
+    required:
+      - employeeId
+      - endDate
+      - pensumPercentage
+      - startDate
+    properties:
+      id:
+        type: integer
+        format: int64
+        example: 42
+        description: Contract ID
+        readOnly: true
+        minimum: 1
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+      startDate:
+        type: string
+        format: date
+        example: '2019-03-13'
+        description: Contract start date (YYYY-MM-DD)
+      endDate:
+        type: string
+        format: date
+        example: '2019-06-13'
+        description: Contract end date (YYYY-MM-DD)
+      pensumPercentage:
+        type: integer
+        format: int32
+        example: 50 (= 0.5 FTE)
+        description: Full time equivalent for the contract as percentage value (0.5 FTE = 50%)
+        minimum: 0
+        maximum: 100
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+      employeeId:
+        type: integer
+        format: int64
+        example: 42
+        description: Employee ID of the contract
+        minimum: 1
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+    title: Contract
+    description: 'Represents the contract an employee can have (Multiple contracts are possible, but date overlapping is not allowed)'
+  Employee:
+    type: object
+    required:
+      - emailAddress
+      - firstName
+      - lastName
+      - role
+    properties:
+      active:
+        type: boolean
+      id:
+        type: integer
+        format: int64
+        example: 42
+        description: Employee ID
+        readOnly: true
+        minimum: 1
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+      firstName:
+        type: string
+        example: Simon
+        description: Employee first name
+        minLength: 1
+        maxLength: 50
+      lastName:
+        type: string
+        example: Wächter
+        description: Employee last name
+        minLength: 1
+        maxLength: 50
+      emailAddress:
+        type: string
+        example: simon.waechter@students.fhnw.ch
+        description: Employee email address
+        minLength: 1
+        maxLength: 120
+      role:
+        type: string
+        example: DEVELOPER
+        description: Single employee role
+        enum:
+          - ADMINISTRATOR
+          - PROJECTMANAGER
+          - DEVELOPER
+    title: Employee
+    description: Represents the employee of the FHNW. An employee can have several non-overlapping contracts. In addition he can work in multiple projects and act as project leader
+  Project:
+    type: object
+    required:
+      - endDate
+      - ftePercentage
+      - name
+      - projectManagerId
+      - startDate
+    properties:
+      active:
+        type: boolean
+      id:
+        type: integer
+        format: int64
+        example: 42
+        description: Project ID
+        readOnly: true
+        minimum: 1
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+      name:
+        type: string
+        example: 'IP5: Distributed IOT systems'
+        description: Project name
+        minLength: 1
+        maxLength: 50
+      ftePercentage:
+        type: integer
+        format: int64
+        example: 500 (= 5 FTE's)
+        description: Full time equivalent represented as a percentage value (1 FTE = 100% = 1 person working 1 day)
+        minimum: 0
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+      startDate:
+        type: string
+        format: date
+        example: '2019-03-13'
+        description: Project start date (YYYY-MM-DD)
+      endDate:
+        type: string
+        format: date
+        example: '2019-06-13'
+        description: Project end date (YYYY-MM-DD)
+      projectManagerId:
+        type: integer
+        format: int64
+        example: 5
+        description: Project manager employee ID
+        minimum: 1
+        maximum: 9223372036854776000
+        exclusiveMinimum: false
+        exclusiveMaximum: false
+    title: Project
+    description: Represents a FHNW research project with a given full-time-equivalent (FTE) workload in percentages managed by a project manager employee
+
