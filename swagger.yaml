@@ -16,10 +16,10 @@ tags:
     description: Endpoint for managing all contracts
   - name: Employee
     description: Endpoint for managing all employees
-  - name: Me
-    description: Endpoint to get to know yourself & manage your JWT tokens
   - name: Project
     description: Endpoint for managing all projects
+  - name: Token
+    description: Endpoint to manage your JWT token
 paths:
   /api/allocation:
     get:
@@ -451,8 +451,6 @@ paths:
           description: New employee with the generated ID
           schema:
             $ref: '#/definitions/Employee'
-        '403':
-          description: Missing permission to create an employee
         '412':
           description: Precondition for the employee failed
         '500':
@@ -569,26 +567,6 @@ paths:
           description: Missing permission to anonymize the employee
         '404':
           description: Employee not found
-        '500':
-          description: Uncaught or internal server error
-      security:
-        - Bearer: []
-      deprecated: false
-  /api/me:
-    get:
-      tags:
-        - Me
-      summary: Get to know yourself as employee
-      operationId: getYourself
-      produces:
-        - application/json
-      responses:
-        '200':
-          description: 'You, the employee'
-          schema:
-            $ref: '#/definitions/Employee'
-        '401':
-          description: Unauthenticated or invalid token
         '500':
           description: Uncaught or internal server error
       security:
@@ -779,16 +757,16 @@ paths:
       security:
         - Bearer: []
       deprecated: false
-  /login:
+  /api/token:
     post:
       tags:
-        - Me
-      summary: Request a JWT token by an initial login process. The JWT token is returned in the body
+        - Token
+      summary: 'Request a JWT token by an initial login process. The JWT token is returned in the body and contains the serialized employee, accessible via the claim employee'
       operationId: requestToken
       consumes:
         - application/json
       produces:
-        - plain/text
+        - text/plain
       parameters:
         - name: email
           in: query
@@ -804,7 +782,7 @@ paths:
           allowEmptyValue: false
       responses:
         '201':
-          description: JWT token after a successful login
+          description: JWT token with the employee claim after a successful login
           schema:
             type: string
         '404':
@@ -816,28 +794,29 @@ paths:
       security:
         - Bearer: []
       deprecated: false
-  /refresh:
-    post:
+    put:
       tags:
-        - Me
-      summary: Request an updated/refreshed JWT token by providing the current valid one (Maybe soon expired?). The token is returned in the body
+        - Token
+      summary: 'Request an updated/refreshed JWT token by providing the current valid one (Maybe soon expired?). The token is returned in the body and contains the serialized employee, accessible via the claim employee'
       operationId: refreshToken
       consumes:
         - application/json
       produces:
-        - plain/text
+        - text/plain
       parameters:
         - name: token
           in: query
-          description: Valid token
+          description: Valid token issued by our server
           required: true
           type: string
           allowEmptyValue: false
       responses:
-        '201':
+        '200':
           description: 'New, updated JWT token after a successful refresh'
           schema:
             type: string
+        '401':
+          description: Unauthenticated or invalid token
         '404':
           description: Token not valid or user not found
         '412':
