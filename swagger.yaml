@@ -1,25 +1,25 @@
 swagger: '2.0'
 info:
-  description: This documentation provides an overview of the FHNW wodss API.
+  description: 'This documentation provides an overview of the FHNW wodss API.'
   version: 1.2.0
-  title: FHNW Projektplanung (Modul wodss)
+  title: 'FHNW Projektplanung (Modul wodss)'
   contact:
-    name: Wächter Simon
+    name: 'Wächter Simon'
     url: 'https://github.com/swaechter/fhnw-wodss-spec'
-    email: simon.waechter@students.fhnw.ch
+    email: 'simon.waechter@students.fhnw.ch'
 host: 'localhost:8000'
 basePath: /
 tags:
   - name: Allocation
-    description: Endpoint for managing all allocations
+    description: 'Endpoint for managing all allocations'
   - name: Contract
-    description: Endpoint for managing all contracts
+    description: 'Endpoint for managing all contracts'
   - name: Employee
-    description: Endpoint for managing all employees
+    description: 'Endpoint for managing all employees'
   - name: Project
-    description: Endpoint for managing all projects
+    description: 'Endpoint for managing all projects'
   - name: Token
-    description: Endpoint to manage your JWT token
+    description: 'Endpoint to manage your JWT token'
 paths:
   /api/allocation:
     get:
@@ -520,7 +520,7 @@ paths:
       parameters:
         - in: body
           name: employee
-          description: 'Employee to create (The ID/Active flag in the body will be ignored)'
+          description: 'Employee to create (The ID and active flag in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Employee'
@@ -529,6 +529,16 @@ paths:
           description: 'Password of the new employee'
           required: true
           type: string
+          allowEmptyValue: false
+        - name: role
+          in: query
+          description: 'Role of the new employee'
+          required: true
+          type: string
+          enum:
+            - ADMINISTRATOR
+            - PROJECTMANAGER
+            - DEVELOPER
           allowEmptyValue: false
       responses:
         '201':
@@ -1069,7 +1079,6 @@ definitions:
       - emailAddress
       - firstName
       - lastName
-      - role
     properties:
       active:
         type: boolean
