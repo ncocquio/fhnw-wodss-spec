@@ -25,14 +25,14 @@ paths:
     get:
       tags:
         - Allocation
-      summary: Get all allocations
+      summary: 'Get all allocations'
       operationId: getAllocations
       produces:
         - application/json
       parameters:
         - name: contractId
           in: query
-          description: 'Filter the allocations by a contract of an employee (Each filter is exclusive, so filters do not stack))'
+          description: 'Filter the allocations by a contract of an employee (Each *Id filter is exclusive, so filters do not stack)'
           required: false
           type: integer
           maximum: 9223372036854776000
@@ -44,7 +44,7 @@ paths:
           x-example: 42
         - name: employeeId
           in: query
-          description: 'Filter the allocations by an employee (Each filter is exclusive, so filters do not stack)'
+          description: 'Filter the allocations by an employee (Each *Id filter is exclusive, so filters do not stack)'
           required: false
           type: integer
           maximum: 9223372036854776000
@@ -56,7 +56,7 @@ paths:
           x-example: 42
         - name: projectId
           in: query
-          description: 'Filter the allocations by a project (Each filter is exclusive, so filters do not stack))'
+          description: 'Filter the allocations by a project (Each *Id filter is exclusive, so filters do not stack)'
           required: false
           type: integer
           maximum: 9223372036854776000
@@ -66,28 +66,49 @@ paths:
           format: int64
           allowEmptyValue: false
           x-example: 42
+        - name: fromDate
+          in: query
+          description: 'Start date (YYYY-MM-DD) to create a time range with a lower boundary.
+          
+            Allocations with a start date before, but an end date after this date will match the criteria.'
+          required: false
+          type: string
+          format: date
+          allowEmptyValue: false
+          x-example: '2019-01-01'
+        - name: toDate
+          in: query
+          description: 'End date (YYYY-MM-DD) to create a time range with an upper boundary.
+          
+            Allocations with a start date before, but an end date after this date will match the criteria.'
+          required: false
+          type: string
+          format: date
+          allowEmptyValue: false
+          x-example: '2019-03-13'
       responses:
         '200':
-          description: All (filtered) allocations (Administrator) or only the own ones (Project Manager/Developer)
+          description: 'All (ADMINISTRATOR, PROJECTMANAGER) or only the users own (DEVELOPER) allocations'
           schema:
             type: array
             items:
               $ref: '#/definitions/Allocation'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to get the allocations
+          description: 'Missing permission to get the allocations'
         '404':
           description: 'Employee, contract or project not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     post:
       tags:
         - Allocation
-      summary: Create a new allocation
+      summary: 'Create a new allocation'
+      description: 'ADMINISTRATOR can create allocations for every project, PROJECTMANAGER for their own projects and DEVELOPER for none'
       operationId: createAllocation
       consumes:
         - application/json
@@ -96,25 +117,33 @@ paths:
       parameters:
         - in: body
           name: allocation
-          description: Allocation to create (The ID in the body will be ignored)
+          description: 'Allocation to create (The ID in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Allocation'
       responses:
         '201':
-          description: New allocation with the generated ID
+          description: 'New allocation with the generated ID
+            
+            ADMINISTRATOR: All
+            
+            PROJECTMANAGER: Own projects'
           schema:
             $ref: '#/definitions/Allocation'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to create a allocation
+          description: 'Missing permission to create a allocation
+            
+            PROJECTMANAGER: Somebody else''s projects
+            
+            DEVELOPER: All'
         '404':
-          description: Contract or project not found
+          description: 'Contract or project not found'
         '412':
-          description: Precondition for the allocation failed
+          description: 'Precondition for the allocation failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -122,14 +151,14 @@ paths:
     get:
       tags:
         - Allocation
-      summary: Get a specific allocation
+      summary: 'Get a specific allocation'
       operationId: getAllocation
       produces:
         - application/json
       parameters:
         - name: id
           in: path
-          description: ID of the allocation
+          description: 'ID of the allocation'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -140,24 +169,30 @@ paths:
           x-example: 42
       responses:
         '200':
-          description: Specific allocation
+          description: 'Specific allocation
+            
+            ADMINISTRATOR, PROJECTMANAGER: All
+            
+            DEVELOPER: Assigned projects'
           schema:
             $ref: '#/definitions/Allocation'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to get the allocation
+          description: 'Missing permission to get the allocation
+
+            DEVELOPER: Not assigend projects'
         '404':
-          description: Allocation not found
+          description: 'Allocation not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     put:
       tags:
         - Allocation
-      summary: Update a specific allocation
+      summary: 'Update a specific allocation'
       operationId: updateAllocation
       consumes:
         - application/json
@@ -166,13 +201,13 @@ paths:
       parameters:
         - in: body
           name: allocation
-          description: Updated allocation (The ID in the body will be ignored)
+          description: 'Updated allocation (The ID in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Allocation'
         - name: id
           in: path
-          description: ID of the allocation to be updated
+          description: 'ID of the allocation to be updated'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -183,33 +218,41 @@ paths:
           x-example: 42
       responses:
         '200':
-          description: Specific updated allocation
+          description: 'Specific updated allocation
+            
+            ADMINISTRATOR: All
+            
+            PROJECTMANAGER: Own projects'
           schema:
             $ref: '#/definitions/Allocation'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to update the allocation
+          description: 'Missing permission to update the allocation
+            
+            PROJECTMANAGER: Somebody else''s projects
+            
+            DEVELOPER: All'
         '404':
           description: 'Allocation, contract or project not found'
         '412':
-          description: Precondition for the allocation failed
+          description: 'Precondition for the allocation failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     delete:
       tags:
         - Allocation
-      summary: Delete a specific allocation
+      summary: 'Delete a specific allocation'
       operationId: deleteAllocation
       produces:
         - application/json
       parameters:
         - name: id
           in: path
-          description: ID of the allocation to be deleted
+          description: 'ID of the allocation to be deleted'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -219,16 +262,24 @@ paths:
           format: int64
           x-example: 42
       responses:
-        '200':
-          description: Allocation successfully deleted
+        '204':
+          description: 'Allocation successfully deleted
+          
+          ADMINISTRATOR: All
+          
+          PROJECTMANAGER: Own projects'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to delete the allocation
+          description: 'Missing permission to delete the allocation
+          
+          PROJECTMANAGER: Somebody else''s projects
+          
+          DEVELOPER: All'
         '404':
-          description: Allocation not found
+          description: 'Allocation not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -236,28 +287,45 @@ paths:
     get:
       tags:
         - Contract
-      summary: Get all contracts
+      summary: 'Get all contracts'
       operationId: getContracts
       produces:
         - application/json
+      parameters:
+        - name: fromDate
+          in: query
+          description: 'Start date (YYYY-MM-DD) to create a time range with a lower boundary (Contracts with a start date before, but an end date after this date will match the criteria)'
+          required: false
+          type: string
+          format: date
+          allowEmptyValue: false
+          x-example: '2019-01-01'
+        - name: toDate
+          in: query
+          description: 'End date (YYYY-MM-DD) to create a time range with an upper boundary (Contracts with a start date before, but an end date after this date will match the criteria)'
+          required: false
+          type: string
+          format: date
+          allowEmptyValue: false
+          x-example: '2019-03-13'
       responses:
         '200':
-          description: All contracts (Administrator/Project Manager) or only own ones (Developer)
+          description: 'All (ADMINISTRATOR, PROJECTMANAGER) or only the users own (DEVELOPER) contracts'
           schema:
             type: array
             items:
               $ref: '#/definitions/Contract'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     post:
       tags:
         - Contract
-      summary: Create a new contract
+      summary: 'Create a new contract'
       operationId: createContract
       consumes:
         - application/json
@@ -266,25 +334,25 @@ paths:
       parameters:
         - in: body
           name: contract
-          description: Contract to create (The ID in the body will be ignored)
+          description: 'Contract to create (The ID in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Contract'
       responses:
         '201':
-          description: New contract with the generated ID
+          description: 'New contract with the generated ID (ADMINISTRATOR)'
           schema:
             $ref: '#/definitions/Contract'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to create a contract
+          description: 'Missing permission to create a contract (PROJECTMANAGER, DEVELOPER)'
         '404':
-          description: Employee not found
+          description: 'Employee not found'
         '412':
-          description: Precondition for the contract failed
+          description: 'Precondition for the contract failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -292,14 +360,14 @@ paths:
     get:
       tags:
         - Contract
-      summary: Get a specific contract
+      summary: 'Get a specific contract'
       operationId: getContract
       produces:
         - application/json
       parameters:
         - name: id
           in: path
-          description: ID of the contract
+          description: 'ID of the contract'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -310,24 +378,28 @@ paths:
           x-example: 42
       responses:
         '200':
-          description: Specific contract
+          description: 'Specific contract
+            
+            ADMINISTRATOR, PROJECTMANAGER: All
+            
+            DEVELOPER: Own contract'
           schema:
             $ref: '#/definitions/Contract'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to get the contract
+          description: 'Missing permission to get the contract'
         '404':
-          description: Contract not found
+          description: 'Contract not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     put:
       tags:
         - Contract
-      summary: Update a specific contract
+      summary: 'Update a specific contract'
       operationId: updateContract
       consumes:
         - application/json
@@ -336,13 +408,13 @@ paths:
       parameters:
         - in: body
           name: contract
-          description: Updated contract (The ID in the body will be ignored)
+          description: 'Updated contract (The ID in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Contract'
         - name: id
           in: path
-          description: ID of the contract to be updated
+          description: 'ID of the contract to be updated'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -353,19 +425,19 @@ paths:
           x-example: 42
       responses:
         '200':
-          description: Specific updated contract
+          description: 'Specific updated contract (ADMINISTRATOR)'
           schema:
             $ref: '#/definitions/Contract'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to update the contract
+          description: 'Missing permission to update the contract (PROJECTMANAGER, DEVELOPER)'
         '404':
-          description: Contract or employee not found
+          description: 'Contract or employee not found'
         '412':
-          description: Precondition for the contract failed
+          description: 'Precondition for the contract failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -379,7 +451,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the contract to be deleted
+          description: 'ID of the contract to be deleted'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -389,16 +461,16 @@ paths:
           format: int64
           x-example: 42
       responses:
-        '200':
-          description: Contract and allocations successfully deleted
+        '204':
+          description: 'Contract and allocations successfully deleted (ADMINISTRATOR)'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to delete the contract
+          description: 'Missing permission to delete the contract (PROJECTMANAGER, DEVELOPER)'
         '404':
-          description: Contract not found
+          description: 'Contract not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -406,28 +478,40 @@ paths:
     get:
       tags:
         - Employee
-      summary: Get all employees
+      summary: 'Get all employees'
       operationId: getEmployees
       produces:
         - application/json
+      parameters:
+        - name: withRole
+          in: query
+          description: 'Only return employees with specified role'
+          required: false
+          type: string
+          enum:
+            - ADMINISTRATOR
+            - PROJECTMANAGER
+            - DEVELOPER
+          allowEmptyValue: false
+          x-example: 'DEVELOPER'
       responses:
         '200':
-          description: All employees (Administrator/Project Manager/Developer)
+          description: 'All employees (ADMINISTRATOR, PROJECTMANAGER, DEVELOPER)'
           schema:
             type: array
             items:
               $ref: '#/definitions/Employee'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     post:
       tags:
         - Employee
-      summary: Create a new employee
+      summary: 'Create a new employee'
       operationId: createEmployee
       consumes:
         - application/json
@@ -436,25 +520,29 @@ paths:
       parameters:
         - in: body
           name: employee
-          description: Employee to create (The ID/Active flag in the body will be ignored)
+          description: 'Employee to create (The ID/Active flag in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Employee'
         - name: password
           in: query
-          description: Password of the new employee
+          description: 'Password of the new employee'
           required: true
           type: string
           allowEmptyValue: false
       responses:
         '201':
-          description: New employee with the generated ID
+          description: 'New employee with the generated ID (ADMINISTRATOR)'
           schema:
             $ref: '#/definitions/Employee'
+        '401':
+          description: 'Unauthenticated or invalid token'
+        '403':
+          description: 'Missing permission to create employee (PROJECTMANAGER, DEVELOPER)'
         '412':
-          description: Precondition for the employee failed
+          description: 'Precondition for the employee failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -462,14 +550,15 @@ paths:
     get:
       tags:
         - Employee
-      summary: Get a specific employee
+      summary: 'Get a specific employee'
+      description: 'Inactive employees will be retured and do NOT trigger HTTP 404.'
       operationId: getEmployee
       produces:
         - application/json
       parameters:
         - name: id
           in: path
-          description: ID of the employee
+          description: 'ID of the employee'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -480,24 +569,22 @@ paths:
           x-example: 42
       responses:
         '200':
-          description: Specific employee
+          description: 'Specific employee (ADMINISTRATOR, PROJECTMANAGER, DEVELOPER)'
           schema:
             $ref: '#/definitions/Employee'
         '401':
-          description: Unauthenticated or invalid token
-        '403':
-          description: Missing permission to get the employee
+          description: 'Unauthenticated or invalid token'
         '404':
-          description: Employee not found
+          description: 'Employee not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     put:
       tags:
         - Employee
-      summary: Update a specific employee
+      summary: 'Update a specific employee'
       operationId: updateEmployee
       consumes:
         - application/json
@@ -506,13 +593,13 @@ paths:
       parameters:
         - in: body
           name: employee
-          description: Updated employee (The ID in the body will be ignored)
+          description: 'Updated employee (The id and role in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Employee'
         - name: id
           in: path
-          description: ID of the employee to be updated
+          description: 'ID of the employee to be updated'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -523,19 +610,19 @@ paths:
           x-example: 42
       responses:
         '200':
-          description: Specific updated employee
+          description: 'Specific updated employee (ADMINISTRATOR)'
           schema:
             $ref: '#/definitions/Employee'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to update the employee
+          description: 'Missing permission to update the employee (PROJECTMANAGER, DEVELOPER)'
         '404':
-          description: Employee not found
+          description: 'Employee not found'
         '412':
-          description: Precondition for the employee failed
+          description: 'Precondition for the employee failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -549,7 +636,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the employee to be anonymized
+          description: 'ID of the employee to be anonymized'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -560,15 +647,15 @@ paths:
           x-example: 42
       responses:
         '200':
-          description: Employee successfully anonymized
+          description: 'Employee successfully anonymized (ADMINISTRATOR)'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to anonymize the employee
+          description: 'Missing permission to anonymize the employee (PROJECTMANAGER, DEVELOPER)'
         '404':
-          description: Employee not found
+          description: 'Employee not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -581,6 +668,18 @@ paths:
       produces:
         - application/json
       parameters:
+        - name: projectManagerId
+          in: query
+          description: 'Filter the projects by a project manager id'
+          required: false
+          type: integer
+          maximum: 9223372036854776000
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          format: int64
+          allowEmptyValue: false
+          x-example: 42
         - name: fromDate
           in: query
           description: 'Start date (YYYY-MM-DD) to create a time range with a lower boundary (Projects with a start date before, but an end date after this date will match the criteria)'
@@ -599,22 +698,24 @@ paths:
           x-example: '2019-03-13'
       responses:
         '200':
-          description: All projects (Administrator) or only the assigned/involved ones (Project Manager/Developer)
+          description: 'All (ADMINISTRATOR, PROJECTMANAGER) or only the assigned/involved ones (DEVELOPER) projects'
           schema:
             type: array
             items:
               $ref: '#/definitions/Project'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
+        '404':
+          description: 'Project Manager not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     post:
       tags:
         - Project
-      summary: Create a new project
+      summary: 'Create a new project'
       operationId: createProject
       consumes:
         - application/json
@@ -623,23 +724,23 @@ paths:
       parameters:
         - in: body
           name: project
-          description: Project to create (The ID in the body will be ignored)
+          description: 'Project to create (The ID in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Project'
       responses:
         '201':
-          description: New project with the generated ID
+          description: 'New project with the generated ID (ADMINISTRATOR, PROJECTMANAGER)'
           schema:
             $ref: '#/definitions/Project'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to create a project
+          description: 'Missing permission to create a project (DEVELOPER)'
         '412':
-          description: Precondition for the project failed
+          description: 'Precondition for the project failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -647,14 +748,14 @@ paths:
     get:
       tags:
         - Project
-      summary: Get a specific project
+      summary: 'Get a specific project'
       operationId: getProject
       produces:
         - application/json
       parameters:
         - name: id
           in: path
-          description: ID of the project
+          description: 'ID of the project'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -665,24 +766,30 @@ paths:
           x-example: 42
       responses:
         '200':
-          description: Specific project
+          description: 'Specific project
+            
+            ADMINISTRATOR, PROJECTMANAGER: All
+            
+            DEVELOPER: Assigned projects'
           schema:
             $ref: '#/definitions/Project'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to get the project
+          description: 'Missing permission to get the project
+            
+            DEVELOPER: Not assigned projects'
         '404':
-          description: Project not found
+          description: 'Project not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
     put:
       tags:
         - Project
-      summary: Update a specific project
+      summary: 'Update a specific project'
       operationId: updateProject
       consumes:
         - application/json
@@ -691,7 +798,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the project to be updated
+          description: 'ID of the project to be updated'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -702,25 +809,33 @@ paths:
           x-example: 42
         - in: body
           name: project
-          description: Updated project (The ID in the body will be ignored)
+          description: 'Updated project (The project id and projectManagerId in the body will be ignored)'
           required: true
           schema:
             $ref: '#/definitions/Project'
       responses:
         '200':
-          description: Specific updated project
+          description: 'Specific updated project
+            
+            ADMINISTRATOR: All
+            
+            PROJECTMANAGER: Own projects'
           schema:
             $ref: '#/definitions/Project'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to update the project
+          description: 'Missing permission to update the project
+            
+            PROJECTMANAGER: Somebody else''s projects
+            
+            DEVELOPER: All'
         '404':
-          description: Project not found
+          description: 'Project not found'
         '412':
-          description: Precondition for the project failed
+          description: 'Precondition for the project failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -734,7 +849,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the project to be deleted
+          description: 'ID of the project to be deleted'
           required: true
           type: integer
           maximum: 9223372036854776000
@@ -744,16 +859,16 @@ paths:
           format: int64
           x-example: 42
       responses:
-        '200':
-          description: Project and allocations successfully deleted
+        '204':
+          description: 'Project and allocations successfully deleted (ADMINISTRATOR)'
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '403':
-          description: Missing permission to delete the project
+          description: 'Missing permission to delete the project (PROJECTMANAGER, DEVELOPER)'
         '404':
-          description: Project not found
+          description: 'Project not found'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -768,29 +883,39 @@ paths:
       produces:
         - text/plain
       parameters:
-        - name: email
-          in: query
-          description: Email address of the employee
+        - in: body
+          name: credentials
+          description: 'User credentials to create JWT token.'
           required: true
-          type: string
-          allowEmptyValue: false
-        - name: password
-          in: query
-          description: Raw password of the employee
-          required: true
-          type: string
-          allowEmptyValue: false
+          schema:
+            type: object
+            required:
+              - emailAddress
+              - password
+            properties:
+              emailAddress:
+                type: string
+                example: 'some.user@students.fhnw.ch'
+                description: 'Employee email address'
+                minLength: 1
+                maxLength: 120
+              password:
+                type: string
+                example: password
+                description: 'Employee password'
+                minLength: 1
+                maxLength: 120
       responses:
         '201':
-          description: JWT token with the employee claim after a successful login
+          description: 'JWT token with the employee claim after a successful login'
           schema:
             type: string
         '404':
-          description: Employee not found or invalid password
+          description: 'Employee not found or invalid password'
         '412':
-          description: Precondition for the username/password failed
+          description: 'Precondition for the username/password failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -806,7 +931,7 @@ paths:
       parameters:
         - name: token
           in: query
-          description: Valid token issued by our server
+          description: 'Valid token issued by our server'
           required: true
           type: string
           allowEmptyValue: false
@@ -816,13 +941,13 @@ paths:
           schema:
             type: string
         '401':
-          description: Unauthenticated or invalid token
+          description: 'Unauthenticated or invalid token'
         '404':
-          description: Token not valid or user not found
+          description: 'Token not valid or user not found'
         '412':
-          description: Precondition for the token failed
+          description: 'Precondition for the token failed'
         '500':
-          description: Uncaught or internal server error
+          description: 'Uncaught or internal server error'
       security:
         - Bearer: []
       deprecated: false
@@ -845,7 +970,7 @@ definitions:
         type: integer
         format: int64
         example: 42
-        description: Allocation ID
+        description: 'Allocation ID'
         readOnly: true
         minimum: 1
         maximum: 9223372036854776000
@@ -855,17 +980,17 @@ definitions:
         type: string
         format: date
         example: '2019-03-13'
-        description: Allocation start date (YYYY-MM-DD)
+        description: 'Allocation start date (YYYY-MM-DD)'
       endDate:
         type: string
         format: date
         example: '2019-06-13'
-        description: Allocation end date (YYYY-MM-DD)
+        description: 'Allocation end date (YYYY-MM-DD)'
       pensumPercentage:
         type: integer
         format: int64
-        example: 50 (= 0.5 FTE)
-        description: Full time equivalent for the contract as percentage value (0.5 FTE = 50%)
+        example: '50 (= 0.5 FTE)'
+        description: 'Full time equivalent for the contract as percentage value (0.5 FTE = 50%)'
         minimum: 0
         maximum: 100
         exclusiveMinimum: false
@@ -874,7 +999,7 @@ definitions:
         type: integer
         format: int64
         example: 42
-        description: Contract ID of the allocation
+        description: 'Contract ID of the allocation'
         minimum: 1
         maximum: 9223372036854776000
         exclusiveMinimum: false
@@ -883,13 +1008,13 @@ definitions:
         type: integer
         format: int64
         example: 42
-        description: Project ID of the allocation
+        description: 'Project ID of the allocation'
         minimum: 1
         maximum: 9223372036854776000
         exclusiveMinimum: false
         exclusiveMaximum: false
     title: Allocation
-    description: Represents the work unit an employee is doing for a project
+    description: 'Represents the work unit an employee is doing for a project'
   Contract:
     type: object
     required:
@@ -902,7 +1027,7 @@ definitions:
         type: integer
         format: int64
         example: 42
-        description: Contract ID
+        description: 'Contract ID'
         readOnly: true
         minimum: 1
         maximum: 9223372036854776000
@@ -912,17 +1037,17 @@ definitions:
         type: string
         format: date
         example: '2019-03-13'
-        description: Contract start date (YYYY-MM-DD)
+        description: 'Contract start date (YYYY-MM-DD)'
       endDate:
         type: string
         format: date
         example: '2019-06-13'
-        description: Contract end date (YYYY-MM-DD)
+        description: 'Contract end date (YYYY-MM-DD)'
       pensumPercentage:
         type: integer
         format: int32
         example: 50 (= 0.5 FTE)
-        description: Full time equivalent for the contract as percentage value (0.5 FTE = 50%)
+        description: 'Full time equivalent for the contract as percentage value (0.5 FTE = 50%)'
         minimum: 0
         maximum: 100
         exclusiveMinimum: false
@@ -931,7 +1056,7 @@ definitions:
         type: integer
         format: int64
         example: 42
-        description: Employee ID of the contract
+        description: 'Employee ID of the contract'
         minimum: 1
         maximum: 9223372036854776000
         exclusiveMinimum: false
@@ -944,6 +1069,7 @@ definitions:
       - emailAddress
       - firstName
       - lastName
+      - role
     properties:
       active:
         type: boolean
@@ -951,7 +1077,7 @@ definitions:
         type: integer
         format: int64
         example: 42
-        description: Employee ID
+        description: 'Employee ID'
         readOnly: true
         minimum: 1
         maximum: 9223372036854776000
@@ -959,33 +1085,33 @@ definitions:
         exclusiveMaximum: false
       firstName:
         type: string
-        example: Simon
-        description: Employee first name
+        example: 'Simon'
+        description: 'Employee first name'
         minLength: 1
         maxLength: 50
       lastName:
         type: string
-        example: Wächter
-        description: Employee last name
+        example: 'Wächter'
+        description: 'Employee last name'
         minLength: 1
         maxLength: 50
       emailAddress:
         type: string
-        example: simon.waechter@students.fhnw.ch
-        description: Employee email address
+        example: 'simon.waechter@students.fhnw.ch'
+        description: 'Employee email address'
         minLength: 1
         maxLength: 120
       role:
         type: string
         example: DEVELOPER
-        description: Single employee role
+        description: 'Single employee role'
         readOnly: true
         enum:
           - ADMINISTRATOR
           - PROJECTMANAGER
           - DEVELOPER
     title: Employee
-    description: Represents the employee of the FHNW. An employee can have several non-overlapping contracts. In addition he can work in multiple projects and act as project leader
+    description: 'Represents the employee of the FHNW. An employee can have several non-overlapping contracts. In addition he can work in multiple projects and act as project leader'
   Project:
     type: object
     required:
@@ -999,7 +1125,7 @@ definitions:
         type: integer
         format: int64
         example: 42
-        description: Project ID
+        description: 'Project ID'
         readOnly: true
         minimum: 1
         maximum: 9223372036854776000
@@ -1008,14 +1134,14 @@ definitions:
       name:
         type: string
         example: 'IP5: Distributed IOT systems'
-        description: Project name
+        description: 'Project name'
         minLength: 1
         maxLength: 50
       ftePercentage:
         type: integer
         format: int64
-        example: 500 (= 5 FTE's)
-        description: Full time equivalent represented as a percentage value (1 FTE = 100% = 1 person working 1 day)
+        example: '500 (= 5 FTE''s)'
+        description: 'Full time equivalent represented as a percentage value (1 FTE = 100% = 1 person working day)'
         minimum: 0
         maximum: 9223372036854776000
         exclusiveMinimum: false
@@ -1024,21 +1150,21 @@ definitions:
         type: string
         format: date
         example: '2019-03-13'
-        description: Project start date (YYYY-MM-DD)
+        description: 'Project start date (YYYY-MM-DD)'
       endDate:
         type: string
         format: date
         example: '2019-06-13'
-        description: Project end date (YYYY-MM-DD)
+        description: 'Project end date (YYYY-MM-DD)'
       projectManagerId:
         type: integer
         format: int64
         example: 5
-        description: Project manager employee ID
+        description: 'Project manager employee ID'
         minimum: 1
         maximum: 9223372036854776000
         exclusiveMinimum: false
         exclusiveMaximum: false
     title: Project
-    description: Represents a FHNW research project with a given full-time-equivalent (FTE) workload in percentages managed by a project manager employee
+    description: 'Represents a FHNW research project with a given full-time-equivalent (FTE) workload in percentages managed by a project manager employee'
 
