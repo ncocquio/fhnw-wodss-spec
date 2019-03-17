@@ -5,7 +5,7 @@ info:
   title: FHNW Projektplanung (Modul wodss)
   contact:
     name: Wächter Simon
-    url: 'https://github.com/swaechter'
+    url: 'https://github.com/swaechter/fhnw-wodss-spec'
     email: simon.waechter@students.fhnw.ch
 host: 'localhost:8000'
 basePath: /
@@ -17,7 +17,7 @@ tags:
   - name: Employee
     description: Endpoint for managing all employees
   - name: Me
-    description: Endpoint to get to know yourself
+    description: Endpoint to get to know yourself & manage your JWT tokens
   - name: Project
     description: Endpoint for managing all projects
 paths:
@@ -73,12 +73,16 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Allocation'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to get the allocations
         '404':
           description: 'Employee, contract or project not found'
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     post:
       tags:
@@ -97,14 +101,12 @@ paths:
           schema:
             $ref: '#/definitions/Allocation'
       responses:
-        '200':
-          description: OK
-          schema:
-            $ref: '#/definitions/Allocation'
         '201':
           description: New allocation with the generated ID
           schema:
             $ref: '#/definitions/Allocation'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to create a allocation
         '404':
@@ -113,6 +115,8 @@ paths:
           description: Precondition for the allocation failed
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
   '/api/allocation/{id}':
     get:
@@ -139,12 +143,16 @@ paths:
           description: Specific allocation
           schema:
             $ref: '#/definitions/Allocation'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to get the allocation
         '404':
           description: Allocation not found
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     put:
       tags:
@@ -178,6 +186,8 @@ paths:
           description: Specific updated allocation
           schema:
             $ref: '#/definitions/Allocation'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to update the allocation
         '404':
@@ -186,6 +196,8 @@ paths:
           description: Precondition for the allocation failed
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     delete:
       tags:
@@ -209,12 +221,16 @@ paths:
       responses:
         '200':
           description: Allocation successfully deleted
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to delete the allocation
         '404':
           description: Allocation not found
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
   /api/contract:
     get:
@@ -231,8 +247,12 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Contract'
+        '401':
+          description: Unauthenticated or invalid token
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     post:
       tags:
@@ -251,14 +271,12 @@ paths:
           schema:
             $ref: '#/definitions/Contract'
       responses:
-        '200':
-          description: OK
-          schema:
-            $ref: '#/definitions/Contract'
         '201':
           description: New contract with the generated ID
           schema:
             $ref: '#/definitions/Contract'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to create a contract
         '404':
@@ -267,6 +285,8 @@ paths:
           description: Precondition for the contract failed
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
   '/api/contract/{id}':
     get:
@@ -293,12 +313,16 @@ paths:
           description: Specific contract
           schema:
             $ref: '#/definitions/Contract'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to get the contract
         '404':
           description: Contract not found
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     put:
       tags:
@@ -332,6 +356,8 @@ paths:
           description: Specific updated contract
           schema:
             $ref: '#/definitions/Contract'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to update the contract
         '404':
@@ -340,6 +366,8 @@ paths:
           description: Precondition for the contract failed
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     delete:
       tags:
@@ -363,12 +391,16 @@ paths:
       responses:
         '200':
           description: Contract and allocations successfully deleted
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to delete the contract
         '404':
           description: Contract not found
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
   /api/employee:
     get:
@@ -385,8 +417,12 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Employee'
+        '401':
+          description: Unauthenticated or invalid token
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     post:
       tags:
@@ -400,15 +436,17 @@ paths:
       parameters:
         - in: body
           name: employee
-          description: Employee to create (The ID in the body will be ignored)
+          description: Employee to create (The ID/Active flag in the body will be ignored)
           required: true
           schema:
             $ref: '#/definitions/Employee'
+        - name: password
+          in: query
+          description: Password of the new employee
+          required: true
+          type: string
+          allowEmptyValue: false
       responses:
-        '200':
-          description: OK
-          schema:
-            $ref: '#/definitions/Employee'
         '201':
           description: New employee with the generated ID
           schema:
@@ -419,6 +457,8 @@ paths:
           description: Precondition for the employee failed
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
   '/api/employee/{id}':
     get:
@@ -445,12 +485,16 @@ paths:
           description: Specific employee
           schema:
             $ref: '#/definitions/Employee'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to get the employee
         '404':
           description: Employee not found
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     put:
       tags:
@@ -484,6 +528,8 @@ paths:
           description: Specific updated employee
           schema:
             $ref: '#/definitions/Employee'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to update the employee
         '404':
@@ -492,6 +538,8 @@ paths:
           description: Precondition for the employee failed
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     delete:
       tags:
@@ -515,12 +563,16 @@ paths:
       responses:
         '200':
           description: Employee successfully anonymized
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to anonymize the employee
         '404':
           description: Employee not found
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
   /api/me:
     get:
@@ -535,8 +587,12 @@ paths:
           description: 'You, the employee'
           schema:
             $ref: '#/definitions/Employee'
+        '401':
+          description: Unauthenticated or invalid token
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
   /api/project:
     get:
@@ -570,8 +626,12 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Project'
+        '401':
+          description: Unauthenticated or invalid token
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     post:
       tags:
@@ -590,20 +650,20 @@ paths:
           schema:
             $ref: '#/definitions/Project'
       responses:
-        '200':
-          description: OK
-          schema:
-            $ref: '#/definitions/Project'
         '201':
           description: New project with the generated ID
           schema:
             $ref: '#/definitions/Project'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to create a project
         '412':
           description: Precondition for the project failed
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
   '/api/project/{id}':
     get:
@@ -630,12 +690,16 @@ paths:
           description: Specific project
           schema:
             $ref: '#/definitions/Project'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to get the project
         '404':
           description: Project not found
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     put:
       tags:
@@ -669,6 +733,8 @@ paths:
           description: Specific updated project
           schema:
             $ref: '#/definitions/Project'
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to update the project
         '404':
@@ -677,6 +743,8 @@ paths:
           description: Precondition for the project failed
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
     delete:
       tags:
@@ -700,13 +768,90 @@ paths:
       responses:
         '200':
           description: Project and allocations successfully deleted
+        '401':
+          description: Unauthenticated or invalid token
         '403':
           description: Missing permission to delete the project
         '404':
           description: Project not found
         '500':
           description: Uncaught or internal server error
+      security:
+        - Bearer: []
       deprecated: false
+  /login:
+    post:
+      tags:
+        - Me
+      summary: Request a JWT token by an initial login process. The JWT token is returned in the body
+      operationId: requestToken
+      consumes:
+        - application/json
+      produces:
+        - plain/text
+      parameters:
+        - name: email
+          in: query
+          description: Email address of the employee
+          required: true
+          type: string
+          allowEmptyValue: false
+        - name: password
+          in: query
+          description: Raw password of the employee
+          required: true
+          type: string
+          allowEmptyValue: false
+      responses:
+        '201':
+          description: JWT token after a successful login
+          schema:
+            type: string
+        '404':
+          description: Employee not found or invalid password
+        '412':
+          description: Precondition for the username/password failed
+        '500':
+          description: Uncaught or internal server error
+      security:
+        - Bearer: []
+      deprecated: false
+  /refresh:
+    post:
+      tags:
+        - Me
+      summary: Request an updated/refreshed JWT token by providing the current valid one (Maybe soon expired?). The token is returned in the body
+      operationId: refreshToken
+      consumes:
+        - application/json
+      produces:
+        - plain/text
+      parameters:
+        - name: token
+          in: query
+          description: Valid token
+          required: true
+          type: string
+          allowEmptyValue: false
+      responses:
+        '201':
+          description: 'New, updated JWT token after a successful refresh'
+          schema:
+            type: string
+        '404':
+          description: Token not valid or user not found
+        '412':
+          description: Precondition for the token failed
+        '500':
+          description: Uncaught or internal server error
+      security:
+        - Bearer: []
+      deprecated: false
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
 definitions:
   Allocation:
     type: object
